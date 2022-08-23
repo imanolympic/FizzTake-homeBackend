@@ -1,11 +1,20 @@
-import mongob, { MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 
-export default async function connect() {
+let cachedClient: MongoClient;
+
+export default async function connectClient(): Promise<MongoClient> {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
   try {
     const uri = process.env.FIZZ_DB_URI as string;
-    await MongoClient.connect(uri);
+    const client = await MongoClient.connect(uri);
 
     console.log("Successfully connected to DB");
+
+    cachedClient = client;
+    return client;
   } catch (e) {
     console.log("Unable to connect to DB");
     process.exit(1);
